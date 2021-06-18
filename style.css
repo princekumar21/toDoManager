@@ -24,10 +24,6 @@ body {
 
   background-image: url(notes.jpg);
   background-size: cover;
-  /* background-image: url("todo2.jpg"); */
-  /* background-size: 1300px;
-    width: 100vw;
-    height: 100vh; */
   z-index: 0;
 }
 .grid-blur {
@@ -354,7 +350,7 @@ body {
   }
 }
 
-@media  (max-width: 768px) {
+@media (max-width: 768px) {
   .filter-container,
   .action-container {
     margin-left: 2rem;
