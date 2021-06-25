@@ -418,4 +418,4 @@ function load(passedColor) {
   }
 }
 
-load();
+
