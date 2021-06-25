@@ -24,6 +24,10 @@ body {
 
   background-image: url(notes.jpg);
   background-size: cover;
+  /* background-image: url("todo2.jpg"); */
+  /* background-size: 1300px;
+    width: 100vw;
+    height: 100vh; */
   z-index: 0;
 }
 .grid-blur {
@@ -133,6 +137,8 @@ body {
   margin-left: 20rem;
 }
 
+
+
 .text {
   color: white;
   font-size: 25px;
@@ -147,6 +153,7 @@ body {
   position: fixed;
   top: calc((100vh - 18rem) / 2);
   left: calc((100vw - 35rem) / 2);
+  border-radius: 5px;
 }
 .writing-area-container {
   height: 100%;
@@ -262,6 +269,8 @@ body {
   z-index: 1;
 }
 
+
+
 .task-lock {
   display: flex;
   height: 16%;
@@ -350,7 +359,7 @@ body {
   }
 }
 
-@media (max-width: 768px) {
+@media  (max-width: 768px) {
   .filter-container,
   .action-container {
     margin-left: 2rem;

@@ -115,67 +115,124 @@ add.addEventListener("click", function () {
 
   writingArea.addEventListener("keydown", (e) => {
     let context = writingArea.innerText;
+    context = context.split("\n").join("<br>");
+    if (context != null) {
+      if (e.getModifierState("Shift") && e.key == "Enter") {
+        grid.classList.remove("grid-blur");
+        let context = writingArea.innerText;
+        context = context.split("\n").join("<br>");
+        let selectModalFilter = document.querySelector(".active-modal-filter");
+        let color = selectModalFilter.classList[1];
+        let locktype = "lock_open";
+        let ticket = document.createElement("div");
+        let id = uid();
+        ticket.classList.add("task-container");
+        ticket.innerHTML = `<div class="task-color ${color}"></div>
+              <div class = "task-lock">
+              <div class="task-id">#${id}</div>
+              <div  class="material-icons edit">edit_note</div>
+              <div class="material-icons lock" locktype="false">lock_open</div>
+              </div>
+              <div class="ticket-box" contenteditable="false" state="false"  spellcheck="false">${context}</div>`;
 
-    if (/*e.key == "Enter" && */ e.key == "Enter") {
-      grid.classList.remove("grid-blur");
-      let context = writingArea.innerText;
-      let selectModalFilter = document.querySelector(".active-modal-filter");
-      let color = selectModalFilter.classList[1];
+        saveTicketInLocalStorage(id, color, context, locktype);
 
-      let ticket = document.createElement("div");
-      let id = uid();
-      ticket.classList.add("task-container");
-      ticket.innerHTML = `<div class="task-color ${color}"></div>
-            <div class = "task-lock">
-            <div class="task-id">#${id}</div>
-            <div  class="material-icons edit">edit_note</div>
-            <div class="material-icons lock" locktype="false">lock_open</div>
-            </div>
-            <div class="ticket-box" contenteditable="false" state="false"  spellcheck="false">${context}</div>`;
-
-      saveTicketInLocalStorage(id, color, context);
-
-      let ticketWritingArea = ticket.querySelector(".ticket-box");
-      ticketWritingArea.addEventListener("input", (e) => {
-        let Id = e.currentTarget.parentElement
-          .querySelector(".task-id")
-          .innerText.split("#")[1];
-        let taskArr = JSON.parse(localStorage.getItem("tasks"));
-        let reqIndex = -1;
-        for (let i = 0; i < taskArr.length; i++) {
-          if (taskArr[i].id == Id) {
-            reqIndex = i;
-            break;
-          }
-        }
-        taskArr[reqIndex].context = e.currentTarget.innerText;
-        localStorage.setItem("tasks", JSON.stringify(taskArr));
-      });
-
-      ticket.addEventListener("click", (e) => {
-        let lock = ticket.querySelector(".lock");
-        let lockstate = lock.getAttribute("locktype");
-
-        if (deleteState && lockstate == "false") {
-          let Id = e.currentTarget
+        let ticketWritingArea = ticket.querySelector(".ticket-box");
+        ticketWritingArea.addEventListener("input", (e) => {
+          let Id = e.currentTarget.parentElement
             .querySelector(".task-id")
             .innerText.split("#")[1];
           let taskArr = JSON.parse(localStorage.getItem("tasks"));
-          let taskarr = taskArr.filter(function (el) {
-            return el.id != Id;
-          });
+          let reqIndex = -1;
+          for (let i = 0; i < taskArr.length; i++) {
+            if (taskArr[i].id == Id) {
+              reqIndex = i;
+              break;
+            }
+          }
+          taskArr[reqIndex].context = e.currentTarget.innerText;
+          localStorage.setItem("tasks", JSON.stringify(taskArr));
+        });
 
-          e.currentTarget.remove();
-          localStorage.setItem("tasks", JSON.stringify(taskarr));
-        }
-      });
+        ticket.addEventListener("click", (e) => {
+          let lock = ticket.querySelector(".lock");
+          let lockstate = lock.getAttribute("locktype");
 
-      let ticketColorDiv = ticket.querySelector(".task-color");
-      ticketColorDiv.addEventListener("click", (e) => {
-        let lock = ticket.querySelector(".lock");
-        let lockstate = lock.getAttribute("locktype");
+          if (deleteState && lockstate == "false") {
+            let Id = e.currentTarget
+              .querySelector(".task-id")
+              .innerText.split("#")[1];
+            let taskArr = JSON.parse(localStorage.getItem("tasks"));
+            let taskarr = taskArr.filter(function (el) {
+              return el.id != Id;
+            });
 
-        if (lockstate == "false") {
+            e.currentTarget.remove();
+            localStorage.setItem("tasks", JSON.stringify(taskarr));
+          }
+        });
+
+        let ticketColorDiv = ticket.querySelector(".task-color");
+        ticketColorDiv.addEventListener("click", (e) => {
+          let lock = ticket.querySelector(".lock");
+          let lockstate = lock.getAttribute("locktype");
+
+          if (lockstate == "false") {
+            let Id = e.currentTarget.parentElement
+              .querySelector(".task-id")
+              .innerText.split("#")[1];
+            let taskArr = JSON.parse(localStorage.getItem("tasks"));
+            let reqIndex = -1;
+            for (let i = 0; i < taskArr.length; i++) {
+              if (taskArr[i].id == Id) {
+                reqIndex = i;
+                break;
+              }
+            }
+
+            let currColor = e.currentTarget.classList[1];
+            let index = colorClasses.indexOf(currColor);
+            index++;
+            index = index % 4;
+            ticketColorDiv.classList.remove(currColor);
+            ticketColorDiv.classList.add(colorClasses[index]);
+
+            taskArr[reqIndex].color = colorClasses[index];
+            localStorage.setItem("tasks", JSON.stringify(taskArr));
+          } else {
+            return;
+          }
+        });
+
+        grid.appendChild(ticket);
+        modal.remove();
+        modalVisible = false;
+
+        let edits = ticket.querySelector(".edit");
+        edits.addEventListener("click", function (e) {
+          let lock = ticket.querySelector(".lock");
+          let lockstate = lock.getAttribute("locktype");
+
+          if (lockstate == "false") {
+            let ticketBox = ticket.querySelector(".ticket-box");
+            let state = ticketBox.getAttribute("state");
+
+            if (state == "false") {
+              ticketBox.contentEditable = true;
+              ticketBox.setAttribute("state", "true");
+            } else {
+              ticketBox.contentEditable = false;
+              ticketBox.setAttribute("state", "false");
+            }
+          }
+        });
+
+        let locks = ticket.querySelector(".lock");
+
+        locks.addEventListener("click", function (e) {
+          let state = locks.getAttribute("locktype");
+          let ticketBox = ticket.querySelector(".ticket-box");
+
           let Id = e.currentTarget.parentElement
             .querySelector(".task-id")
             .innerText.split("#")[1];
@@ -188,58 +245,21 @@ add.addEventListener("click", function () {
             }
           }
 
-          let currColor = e.currentTarget.classList[1];
-          let index = colorClasses.indexOf(currColor);
-          index++;
-          index = index % 4;
-          ticketColorDiv.classList.remove(currColor);
-          ticketColorDiv.classList.add(colorClasses[index]);
-
-          taskArr[reqIndex].color = colorClasses[index];
-          localStorage.setItem("tasks", JSON.stringify(taskArr));
-        } else {
-          return;
-        }
-      });
-
-      grid.appendChild(ticket);
-      modal.remove();
-      modalVisible = false;
-
-      let edits = ticket.querySelector(".edit");
-      edits.addEventListener("click", function (e) {
-        let lock = ticket.querySelector(".lock");
-        let lockstate = lock.getAttribute("locktype");
-
-        if (lockstate == "false") {
-          let ticketBox = ticket.querySelector(".ticket-box");
-          let state = ticketBox.getAttribute("state");
-
           if (state == "false") {
-            ticketBox.contentEditable = true;
-            ticketBox.setAttribute("state", "true");
-          } else {
+            e.currentTarget.innerText = "lock";
+            locks.setAttribute("locktype", "true");
             ticketBox.contentEditable = false;
             ticketBox.setAttribute("state", "false");
+            taskArr[reqIndex].locktype = e.currentTarget.innerText;
+            localStorage.setItem("tasks", JSON.stringify(taskArr));
+          } else {
+            e.currentTarget.innerText = "lock_open";
+            locks.setAttribute("locktype", "false");
+            taskArr[reqIndex].locktype = e.currentTarget.innerText;
+            localStorage.setItem("tasks", JSON.stringify(taskArr));
           }
-        }
-      });
-
-      let locks = ticket.querySelector(".lock");
-
-      locks.addEventListener("click", function (e) {
-        let state = locks.getAttribute("locktype");
-        let ticketBox = ticket.querySelector(".ticket-box");
-        if (state == "false") {
-          e.currentTarget.innerText = "lock";
-          locks.setAttribute("locktype", "true");
-          ticketBox.contentEditable = false;
-          ticketBox.setAttribute("state", "false");
-        } else {
-          e.currentTarget.innerText = "lock_open";
-          locks.setAttribute("locktype", "false");
-        }
-      });
+        });
+      }
     }
   });
 });
@@ -257,8 +277,8 @@ del.addEventListener("click", () => {
   }
 });
 
-function saveTicketInLocalStorage(id, color, context) {
-  let reqObject = { id, color, context };
+function saveTicketInLocalStorage(id, color, context, locktype) {
+  let reqObject = { id, color, context, locktype };
   let taskArr = JSON.parse(localStorage.getItem("tasks"));
   if (reqObject != null) {
     taskArr.push(reqObject);
@@ -277,6 +297,7 @@ function load(passedColor) {
     let id = task[i].id;
     let color = task[i].color;
     let context = task[i].context;
+    let locktype = task[i].locktype;
 
     if (passedColor) {
       if (passedColor != color) continue;
@@ -288,7 +309,7 @@ function load(passedColor) {
         <div class = "task-lock">
                     <div class="task-id">#${id}</div>
                     <div  class="material-icons edit">edit_note</div>
-                    <div  class="material-icons lock" locktype="false">lock_open</div>
+                    <div  class="material-icons lock" locktype="false">${locktype}</div>
                 </div>
         <div class="ticket-box" contenteditable="false" state="false" spellcheck="false">${context}</div>`;
 
@@ -297,8 +318,8 @@ function load(passedColor) {
     let edits = ticket.querySelector(".edit");
     edits.addEventListener("click", function (e) {
       let lock = ticket.querySelector(".lock");
-      let lockstate = lock.getAttribute("locktype");
-      if (lockstate == "false") {
+
+      if (lock.innerText == "lock_open") {
         let ticketBox = ticket.querySelector(".ticket-box");
         let state = ticketBox.getAttribute("state");
         if (state == "false") {
@@ -316,14 +337,31 @@ function load(passedColor) {
     locks.addEventListener("click", function (e) {
       let state = locks.getAttribute("locktype");
       let ticketBox = ticket.querySelector(".ticket-box");
+
+      let Id = e.currentTarget.parentElement
+        .querySelector(".task-id")
+        .innerText.split("#")[1];
+      let taskArr = JSON.parse(localStorage.getItem("tasks"));
+      let reqIndex = -1;
+      for (let i = 0; i < taskArr.length; i++) {
+        if (taskArr[i].id == Id) {
+          reqIndex = i;
+          break;
+        }
+      }
+
       if (state == "false") {
         e.currentTarget.innerText = "lock";
         locks.setAttribute("locktype", "true");
         ticketBox.contentEditable = false;
         ticketBox.setAttribute("state", "false");
+        taskArr[reqIndex].locktype = e.currentTarget.innerText;
+        localStorage.setItem("tasks", JSON.stringify(taskArr));
       } else {
         e.currentTarget.innerText = "lock_open";
         locks.setAttribute("locktype", "false");
+        taskArr[reqIndex].locktype = e.currentTarget.innerText;
+        localStorage.setItem("tasks", JSON.stringify(taskArr));
       }
     });
 
@@ -331,8 +369,8 @@ function load(passedColor) {
     let ticketColorDiv = ticket.querySelector(".task-color");
     ticketColorDiv.addEventListener("click", (e) => {
       let lock = ticket.querySelector(".lock");
-      let lockstate = lock.getAttribute("locktype");
-      if (lockstate == "false") {
+
+      if (lock.innerText == "lock_open") {
         let Id = e.currentTarget.parentElement
           .querySelector(".task-id")
           .innerText.split("#")[1];
@@ -361,9 +399,8 @@ function load(passedColor) {
 
     ticket.addEventListener("click", (e) => {
       let lock = ticket.querySelector(".lock");
-      let lockstate = lock.getAttribute("locktype");
 
-      if (deleteState && lockstate == "false") {
+      if (deleteState == "false" && lock.innerText == "lock_open") {
         let Id = e.currentTarget
           .querySelector(".task-id")
           .innerText.split("#")[1];
