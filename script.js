@@ -3,7 +3,7 @@ let grid = document.querySelector(".grid");
 let add = document.querySelector(".outlined-add");
 let body = document.querySelector("body");
 let modalVisible = false;
-let uid = new ShortUniqueId();
+let uid = Date.now();
 let deleteState = false;
 
 let colors = {
@@ -117,7 +117,8 @@ add.addEventListener("click", function () {
     let context = writingArea.innerText;
     context = context.split("\n").join("<br>");
     if (context != null) {
-      if (e.getModifierState("Shift") && e.key == "Enter") {
+      if ( e.key == "Enter") {
+        console.log("hello")
         grid.classList.remove("grid-blur");
         let context = writingArea.innerText;
         context = context.split("\n").join("<br>");
@@ -125,7 +126,7 @@ add.addEventListener("click", function () {
         let color = selectModalFilter.classList[1];
         let locktype = "lock_open";
         let ticket = document.createElement("div");
-        let id = uid();
+        let id = Date.now();
         ticket.classList.add("task-container");
         ticket.innerHTML = `<div class="task-color ${color}"></div>
               <div class = "task-lock">
@@ -399,8 +400,11 @@ function load(passedColor) {
 
     ticket.addEventListener("click", (e) => {
       let lock = ticket.querySelector(".lock");
-
-      if (deleteState == "false" && lock.innerText == "lock_open") {
+      
+      console.log(deleteState);
+      console.log(lock.innerText);
+      if (deleteState === true && lock.innerText == "lock_open") {
+        console.log("hello23");
         let Id = e.currentTarget
           .querySelector(".task-id")
           .innerText.split("#")[1];
